@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
-const PORT = process.env.PORT || 3000
+const port = process.env.PORT || 3000
 
 require('dotenv').config()
 
@@ -12,8 +12,8 @@ app.use( express.json() )
 app.use( express.urlencoded({ extended: true}))
 
 // server listening to the provided port
-app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT} ...`)
+app.listen(port, () => {
+  console.log(`Server listening at http://localhost:${port} ...`)
 })
 
 // Mongoose DB initialisation
