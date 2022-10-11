@@ -72,9 +72,47 @@ app.post('/signup', async (req, res) => {
   res.json( newSignup )
 }) // /signup
 
+
+// DOES NOT WORK FOR NEWLY CREATED USERS??
 app.post('/login', async (req, res) => {
-  console.log('login form here')
-  res.json({ login: 'form'})
+
+  console.log('login form here:', req.body)
+
+  const { email, passwordDigest } = req.body
+
+  try {
+
+    const user = await User.findOne({ email })
+
+    // comparing credentiaks
+    if (user && bcrypt.compareSync(passwordDigest, user.passwordDigest)){
+
+      const token = jwt.sign(
+        // the data to encode in the 'payload'
+        { _id: user._id },
+
+        // the secret key to use to encrypt the token - this is what ensures that although
+        // the token payload can be READ by anyone, only the server can MODIFY the payload
+        // by using the secret key - ie users can't change their user ID
+        process.env.SERVER_SECRET_KEY,
+
+        // expiry date/other config
+        {expiresIn: '72h'}
+      )
+
+      res.json({token})
+
+    } else {
+      // incorrect credentials: user not found (by email), or passwords dont match
+      res.status(401).json({success: false})
+    }
+
+  }catch( err ){
+    console.log('Error verifying login credentials:', err)
+    res.sendStatus(500)
+  }
+
+
 }) // /login
 
 app.post('/logout', async (req, res) => {
@@ -82,7 +120,9 @@ app.post('/logout', async (req, res) => {
   res.json({ login: 'form'})
 }) // /logout
 
+// Routes below this line only work for authenticated users
 
+// Custom middleware, defined inline:
 
 
 
