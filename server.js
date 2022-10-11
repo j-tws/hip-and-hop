@@ -1,7 +1,9 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
-const PORT = 3000
+const PORT = 3001
+
+require('dotenv').config()
 
 app.use( cors() )
 
@@ -17,7 +19,7 @@ app.listen(PORT, () => {
 const mongoose = require('mongoose');
 const User = require('./models/User')
 
-// mongoose.connect('mongodb://127.0.0.1/hh')
+
 
 
 
