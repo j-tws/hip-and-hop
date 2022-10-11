@@ -31,6 +31,7 @@ Temporary Items
 # ignore Rails cache files
 tmp/
 log/
+.env
 !/log/.keep
 !/tmp/.keep
 node_modules/
