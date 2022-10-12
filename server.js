@@ -154,9 +154,9 @@ app.get('/current_user', (req, res) => {
 app.post('/submit-hip-score', async (req, res) => {
   console.log('score submit!')
 
-  const { email, score } = req.body
-  console.log(email, score);
-  await User.updateOne({ email }, { hipScore: score })
+  const { name, score } = req.body
+  console.log(name, score);
+  await User.updateOne({ name }, { hipScore: score })
 
   res.status(200).json({ score: 'submit' })
 })
