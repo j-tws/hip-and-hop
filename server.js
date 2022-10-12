@@ -5,11 +5,11 @@ const port = process.env.PORT || 3000
 
 require('dotenv').config()
 
-app.use( cors() )
+app.use(cors())
 
 // To get access to POSTed 'formdata' body content, we have to 
-app.use( express.json() )
-app.use( express.urlencoded({ extended: true}))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 // server listening to the provided port
 app.listen(port, () => {
@@ -35,7 +35,7 @@ const jwtAuthenticate = require('express-jwt')
 
 const checkAuth = () => {
 
-  return jwtAuthenticate.expressjwt({ 
+  return jwtAuthenticate.expressjwt({
     secret: process.env.SERVER_SECRET_KEY,
     algorithms: ['HS256'],
     requestProperty: 'auth' // gives us 'req.auth'
@@ -51,18 +51,18 @@ app.get('/', (req, res) => {
 
 //login route is all below here ---------------------
 app.post('/signup', async (req, res) => {
-  
+
   const newSignup = {
     name: req.body.name,
     email: req.body.email,
     // passwordDigest: bcrypt.hashSync(req.body.password, 10)
-  
+
     passwordDigest: req.body.password // pre-action in the model will encrypt this
   }
 
-  await User.create( newSignup )
+  await User.create(newSignup)
 
-  res.json( newSignup )
+  res.json(newSignup)
 }) // /signup
 
 
@@ -78,7 +78,7 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({ email })
 
     // comparing credentiaks
-    if (user && bcrypt.compareSync(passwordDigest, user.passwordDigest)){
+    if (user && bcrypt.compareSync(passwordDigest, user.passwordDigest)) {
 
       const token = jwt.sign(
         // the data to encode in the 'payload'
@@ -90,17 +90,17 @@ app.post('/login', async (req, res) => {
         process.env.SERVER_SECRET_KEY,
 
         // expiry date/other config
-        {expiresIn: '72h'}
+        { expiresIn: '72h' }
       )
 
-      res.json({token, user})
+      res.json({ token, user })
 
     } else {
       // incorrect credentials: user not found (by email), or passwords dont match
-      res.status(401).json({success: false})
+      res.status(401).json({ success: false })
     }
 
-  }catch( err ){
+  } catch (err) {
     console.log('Error verifying login credentials:', err)
     res.sendStatus(500)
   }
@@ -110,25 +110,25 @@ app.post('/login', async (req, res) => {
 
 app.post('/logout', async (req, res) => {
   console.log('logout initiated')
-  res.json({ login: 'form'})
+  res.json({ login: 'form' })
 }) // /logout
 
 // Routes below this line only work for authenticated users
 
-app.use( checkAuth() )
+app.use(checkAuth())
 
 // Custom middleware, defined inline:
 // Use the req.auth ID from the middleware above and try to look up a user with it 
 // if found, attached to req.current_user for all the requests that follow this
 // if not found, return an error code
-app.use( async (req, res, next) => {
+app.use(async (req, res, next) => {
 
   try {
 
     const user = await User.findOne({ _id: req.auth._id })
 
-    if ( user === null ){
-      res.sendStatus( 401 ) // invalid/stale token
+    if (user === null) {
+      res.sendStatus(401) // invalid/stale token
       // Note that by running a response method here, this middleware will not
       // allow any further routes to be handled
     } else {
@@ -137,9 +137,9 @@ app.use( async (req, res, next) => {
     }
 
 
-  } catch( err ) {
+  } catch (err) {
     console.log('Error querying User in auth middleware', err)
-    res.sendStatus( 500 )
+    res.sendStatus(500)
 
   }
 
@@ -155,30 +155,31 @@ app.post('/submit-hip-score', async (req, res) => {
   console.log('score submit!')
 
   const { email, score } = req.body
-  await User.updateOne( { email }, {hipScore: score})
+  console.log(email, score);
+  await User.updateOne({ email }, { hipScore: score })
 
-  res.status(200).json({ score: 'submit'})
+  res.status(200).json({ score: 'submit' })
 })
 
 app.post('/submit-hop-score', async (req, res) => {
   console.log('score submit!')
 
   const { email, score } = req.body
-  await User.updateOne( { email }, {hopScore: score})
+  await User.updateOne({ email }, { hopScore: score })
 
-  res.status(200).json({ score: 'submit'})
+  res.status(200).json({ score: 'submit' })
 })
 
 
 // get the top 10 high scores
 app.get('/hip-scores', async (req, res) => {
-  const users = await User.find({}, 'name hipScore -_id').sort({ hipScore: -1}).limit(10)
+  const users = await User.find({}, 'name hipScore -_id').sort({ hipScore: -1 }).limit(10)
 
   res.status(200).json(users)
 })
 
 app.get('/hop-scores', async (req, res) => {
-  const users = await User.find({}, 'name hopScore -_id').sort({ hopScore: -1}).limit(10)
+  const users = await User.find({}, 'name hopScore -_id').sort({ hopScore: -1 }).limit(10)
 
   res.status(200).json(users)
 })
