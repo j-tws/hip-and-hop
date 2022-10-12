@@ -49,22 +49,15 @@ app.get('/', (req, res) => {
 })
 
 
-app.post('/submit-score', (req, res) => {
-  console.log('score submit!')
-  res.json({ score: 'submit'})
-})
-
-app.get('/scores', (req, res) => {
-  res.json({ scores: 'are here'})
-})
-
 //login route is all below here ---------------------
 app.post('/signup', async (req, res) => {
   
   const newSignup = {
     name: req.body.name,
     email: req.body.email,
-    passwordDigest: req.body.passwordDigest
+    // passwordDigest: bcrypt.hashSync(req.body.password, 10)
+  
+    passwordDigest: req.body.password // pre-action in the model will encrypt this
   }
 
   await User.create( newSignup )
@@ -100,7 +93,7 @@ app.post('/login', async (req, res) => {
         {expiresIn: '72h'}
       )
 
-      res.json({token})
+      res.json({token, user})
 
     } else {
       // incorrect credentials: user not found (by email), or passwords dont match
@@ -122,7 +115,71 @@ app.post('/logout', async (req, res) => {
 
 // Routes below this line only work for authenticated users
 
+app.use( checkAuth() )
+
 // Custom middleware, defined inline:
+// Use the req.auth ID from the middleware above and try to look up a user with it 
+// if found, attached to req.current_user for all the requests that follow this
+// if not found, return an error code
+app.use( async (req, res, next) => {
+
+  try {
+
+    const user = await User.findOne({ _id: req.auth._id })
+
+    if ( user === null ){
+      res.sendStatus( 401 ) // invalid/stale token
+      // Note that by running a response method here, this middleware will not
+      // allow any further routes to be handled
+    } else {
+      req.current_user = user // add 'current_user'for the next route to access
+      next() // move on to the next route handler/middleware in this server
+    }
 
 
+  } catch( err ) {
+    console.log('Error querying User in auth middleware', err)
+    res.sendStatus( 500 )
+
+  }
+
+})
+
+// current_user debugging
+app.get('/current_user', (req, res) => {
+  console.log(req.current_user)
+  res.json(req.current_user)
+})
+
+app.post('/submit-hip-score', async (req, res) => {
+  console.log('score submit!')
+
+  const { email, score } = req.body
+  await User.updateOne( { email }, {hipScore: score})
+
+  res.status(200).json({ score: 'submit'})
+})
+
+app.post('/submit-hop-score', async (req, res) => {
+  console.log('score submit!')
+
+  const { email, score } = req.body
+  await User.updateOne( { email }, {hopScore: score})
+
+  res.status(200).json({ score: 'submit'})
+})
+
+
+// get the top 10 high scores
+app.get('/hip-scores', async (req, res) => {
+  const users = await User.find({}, 'name hipScore -_id').sort({ hipScore: -1}).limit(10)
+
+  res.status(200).json(users)
+})
+
+app.get('/hop-scores', async (req, res) => {
+  const users = await User.find({}, 'name hopScore -_id').sort({ hopScore: -1}).limit(10)
+
+  res.status(200).json(users)
+})
 

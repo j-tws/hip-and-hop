@@ -34,12 +34,12 @@ const UserSchema = new mongoose.Schema({
 
 // ERROR ABOUT DATA AND SALT REQUIRED IF THIS IS TURNED ON
 // function for converting password into encrypted password upon signing up
-// UserSchema.pre('save', async (next) => {
-//   const user = this
-//   const hash = await bcrypt.hash(this.passwordDigest, 10)
-//   this.passwordDigest = hash
-//   next()
-// })
+UserSchema.pre('save', function(next){
+  // const user = this
+  const hash =  bcrypt.hashSync(this.passwordDigest, 10)
+  this.passwordDigest = hash
+  next()
+})
 
 
 module.exports = mongoose.model('User', UserSchema)
