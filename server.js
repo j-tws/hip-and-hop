@@ -55,9 +55,7 @@ app.post('/signup', async (req, res) => {
   const newSignup = {
     name: req.body.name,
     email: req.body.email,
-    // passwordDigest: bcrypt.hashSync(req.body.password, 10)
-
-    passwordDigest: req.body.password // pre-action in the model will encrypt this
+    passwordDigest: req.body.passwordDigest // pre-action in the model will encrypt this
   }
 
   await User.create(newSignup)
@@ -65,8 +63,6 @@ app.post('/signup', async (req, res) => {
   res.json(newSignup)
 }) // /signup
 
-
-// DOES NOT WORK FOR NEWLY CREATED USERS??
 app.post('/login', async (req, res) => {
 
   console.log('login form here:', req.body)
@@ -74,8 +70,8 @@ app.post('/login', async (req, res) => {
   const { email, passwordDigest } = req.body
 
   try {
-
     const user = await User.findOne({ email })
+    console.log(user)
 
     // comparing credentiaks
     if (user && bcrypt.compareSync(passwordDigest, user.passwordDigest)) {
@@ -145,10 +141,14 @@ app.use(async (req, res, next) => {
 
 })
 
-// current_user debugging
+// get current_user data (not all only neccessary ones)
 app.get('/current_user', (req, res) => {
-  console.log(req.current_user)
-  res.json(req.current_user)
+
+  res.json({
+    name: req.current_user.name,
+    hipScore: req.current_user.hipScore,
+    hopScore: req.current_user.hopScore
+  })
 })
 
 app.post('/submit-hip-score', async (req, res) => {
@@ -164,22 +164,24 @@ app.post('/submit-hip-score', async (req, res) => {
 app.post('/submit-hop-score', async (req, res) => {
   console.log('score submit!')
 
-  const { email, score } = req.body
-  await User.updateOne({ email }, { hopScore: score })
 
-  res.status(200).json({ score: 'submit' })
+  const { name, score } = req.body
+  const user = await User.updateOne({ name }, { hopScore: score })
+
+  res.status(200).json(user)
 })
 
 
 // get the top 10 high scores
 app.get('/hip-scores', async (req, res) => {
-  const users = await User.find({}, 'name hipScore -_id').sort({ hipScore: -1 }).limit(10)
+  const users = await User.find({}, 'name hipScore -_id').sort({ hipScore: -1 }).limit(5)
 
   res.status(200).json(users)
 })
 
 app.get('/hop-scores', async (req, res) => {
-  const users = await User.find({}, 'name hopScore -_id').sort({ hopScore: -1 }).limit(10)
+
+  const users = await User.find({}, 'name hopScore -_id').sort({ hopScore: -1 }).limit(5)
 
   res.status(200).json(users)
 })

@@ -33,7 +33,7 @@ db.once('open', async () => {
     },
 
     {
-      name: 'k-dizzle',
+      name: 'Xx_kr1$$_xX',
       email: 'kris@ga.co',
       passwordDigest: bcrypt.hashSync('chicken', 10),
       hipScore: 150,
