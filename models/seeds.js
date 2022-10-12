@@ -27,7 +27,8 @@ db.once('open', async () => {
       name: 'textchimp',
       email: 'luke@ga.co',
       passwordDigest: bcrypt.hashSync('chicken', 10),
-      score: 100
+      hipScore: 100,
+      hopScore: 200,
 
     },
 
@@ -35,7 +36,8 @@ db.once('open', async () => {
       name: 'k-dizzle',
       email: 'kris@ga.co',
       passwordDigest: bcrypt.hashSync('chicken', 10),
-      score: 150
+      hipScore: 150,
+      hopScore: 250,
 
     },
 
