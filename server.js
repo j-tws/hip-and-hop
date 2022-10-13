@@ -164,10 +164,22 @@ app.post('/submit-hip-score', async (req, res) => {
   console.log('score submit!')
 
   const { name, score } = req.body
-  console.log(name, score);
-  await User.updateOne({ name }, { hipScore: score })
 
-  res.status(200).json({ score: 'submit' })
+  // Get details of the current user
+  const currentUser = await User.findOne({ name: "textchimp" })
+
+  let response;
+  if (score > currentUser.hipScore) {
+    // Update high score if score is higher than previous record
+    response = await User.updateOne({ name }, { hipScore: score })
+    console.log(`${name}'s score updated to ${score}`);
+  } else {
+    // Don't update score. Just return the last high score
+    response = currentUser
+    console.log("No new high score");
+  }
+  console.log(response)
+  res.status(200).json(response)
 })
 
 app.post('/submit-hop-score', async (req, res) => {
