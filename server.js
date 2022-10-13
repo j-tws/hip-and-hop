@@ -58,9 +58,18 @@ app.post('/signup', async (req, res) => {
     passwordDigest: req.body.passwordDigest // pre-action in the model will encrypt this
   }
 
-  await User.create( newSignup )
+  const createdUser = await User.create( newSignup )
+  console.log(createdUser)
 
-  res.json( newSignup )
+  // creates token for newly created sign in user
+  const token = jwt.sign(
+    { _id: createdUser._id },
+    process.env.SERVER_SECRET_KEY,
+    {expiresIn: '72h'}
+  )
+
+  res.json({token, createdUser})
+
 }) // /signup
 
 app.post('/login', async (req, res) => {
@@ -70,8 +79,8 @@ app.post('/login', async (req, res) => {
   const { email, passwordDigest } = req.body
 
   try {
+
     const user = await User.findOne({ email })
-    console.log(user)
 
     // comparing credentiaks
     if (user && bcrypt.compareSync(passwordDigest, user.passwordDigest)){
