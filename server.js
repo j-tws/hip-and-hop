@@ -152,7 +152,8 @@ app.use(async (req, res, next) => {
 
 // get current_user data (not all only neccessary ones)
 app.get('/current_user', (req, res) => {
-
+  
+  console.log(req.current_user)
   res.json({
     name: req.current_user.name,
     hipScore: req.current_user.hipScore,
@@ -166,7 +167,7 @@ app.post('/submit-hip-score', async (req, res) => {
   const { name, score } = req.body
 
   // Get details of the current user
-  const currentUser = await User.findOne({ name: "textchimp" })
+  const currentUser = await User.findOne({ name })
 
   let response;
   if (score > currentUser.hipScore) {
@@ -185,11 +186,24 @@ app.post('/submit-hip-score', async (req, res) => {
 app.post('/submit-hop-score', async (req, res) => {
   console.log('score submit!')
 
-
   const { name, score } = req.body
-  const user = await User.updateOne({ name }, { hopScore: score })
 
-  res.status(200).json(user)
+  // Get details of the current user
+  const currentUser = await User.findOne({ name })
+
+  let response;
+  if (score > currentUser.hopScore) {
+    // Update high score if score is higher than previous record
+    response = await User.updateOne({ name }, { hopScore: score })
+    console.log(`${name}'s score updated to ${score}`);
+  } else {
+    // Don't update score. Just return the last high score
+    response = currentUser
+    console.log("No new high score");
+  }
+  console.log(response)
+  res.status(200).json(response)
+
 })
 
 
